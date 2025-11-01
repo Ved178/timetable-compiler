@@ -24,18 +24,17 @@ from config import SUPPORTED_LLM_PROVIDERS, DEFAULT_MODEL
 # Page configuration
 st.set_page_config(
     page_title="Timetable Compiler",
-    page_icon="📅",
     layout="wide"
 )
 
 # Title and description
-st.title("📅 Timetable Compiler")
+st.title("Timetable Compiler")
 st.markdown("""
 Upload multiple timetable images and compile them into one accurate DataFrame using OCR and LLM correction.
 """)
 
 # Sidebar configuration
-st.sidebar.header("⚙️ Configuration")
+st.sidebar.header("Configuration")
 
 # LLM Provider selection
 provider = st.sidebar.selectbox(
@@ -59,7 +58,7 @@ model = st.sidebar.text_input(
 )
 
 # Advanced settings
-with st.sidebar.expander("🔧 Advanced Settings"):
+with st.sidebar.expander("Advanced Settings"):
     scale = st.slider("Table Detection Scale", 10, 30, 15, 
                      help="Lower values detect more lines")
     joint_tol = st.slider("Joint Tolerance", 6, 20, 12,
@@ -70,7 +69,7 @@ with st.sidebar.expander("🔧 Advanced Settings"):
                           help="Number of entries to correct per API call")
 
 # Main content
-tab1, tab2 = st.tabs(["📤 Upload & Process", "ℹ️ Instructions"])
+tab1, tab2 = st.tabs(["Upload & Process", "Instructions"])
 
 with tab1:
     # File upload
@@ -82,7 +81,7 @@ with tab1:
     )
     
     if uploaded_files:
-        st.success(f"✅ {len(uploaded_files)} file(s) uploaded")
+        st.success(f"{len(uploaded_files)} file(s) uploaded")
         
         # Display uploaded images
         cols = st.columns(min(len(uploaded_files), 3))
@@ -91,11 +90,11 @@ with tab1:
                 st.image(uploaded_file, caption=uploaded_file.name, use_column_width=True)
     
     # Process button
-    if st.button("🚀 Process Timetables", type="primary", disabled=not uploaded_files):
+    if st.button("Process Timetables", type="primary", disabled=not uploaded_files):
         if not api_key:
-            st.error("⚠️ Please enter your API key in the sidebar")
+            st.error("Please enter your API key in the sidebar")
         elif not validate_api_key(provider, api_key):
-            st.error(f"⚠️ Invalid API key format for {provider}")
+            st.error(f"Invalid API key format for {provider}")
         else:
             # Initialize progress tracking
             progress_bar = st.progress(0)
@@ -118,13 +117,13 @@ with tab1:
                     file_path = save_uploaded_file(uploaded_file)
                     
                     # Step 1: Load and enhance image
-                    status_text.text(f"📷 Enhancing {uploaded_file.name}...")
+                    status_text.text(f"Enhancing {uploaded_file.name}...")
                     img = load_image(str(file_path))
                     enhanced_img = enhance_image_for_ocr(img)
                     progress_bar.progress((idx + 0.25) / (len(uploaded_files)))
                     
                     # Step 2: Detect table structure
-                    status_text.text(f"🔍 Detecting table in {uploaded_file.name}...")
+                    status_text.text(f"Detecting table in {uploaded_file.name}...")
                     cells, table_roi = detect_table_structure(
                         enhanced_img, 
                         scale=scale, 
@@ -133,13 +132,13 @@ with tab1:
                     progress_bar.progress((idx + 0.5) / (len(uploaded_files)))
                     
                     # Step 3: Extract text with OCR
-                    status_text.text(f"📝 Extracting text from {uploaded_file.name}...")
+                    status_text.text(f"Extracting text from {uploaded_file.name}...")
                     ocr_extractor = OCRExtractor(gpu=use_gpu)
                     df, table_text = ocr_extractor.extract_full_table(cells)
                     progress_bar.progress((idx + 0.75) / (len(uploaded_files)))
                     
                     # Step 4: Correct with LLM
-                    status_text.text(f"🤖 Correcting with LLM: {uploaded_file.name}...")
+                    status_text.text(f"Correcting with LLM: {uploaded_file.name}...")
                     llm_corrector = LLMCorrector(
                         provider=provider,
                         model=model if model else None,
@@ -155,18 +154,18 @@ with tab1:
                     all_labels.append(uploaded_file.name)
                 
                 # Step 5: Merge all timetables
-                status_text.text("🔄 Merging timetables...")
+                status_text.text("Merging timetables...")
                 merger = TimetableMerger()
                 merged_df = merger.merge_timetables(all_dataframes, all_labels)
                 
                 progress_bar.progress(1.0)
-                status_text.text("✅ Processing complete!")
+                status_text.text("Processing complete!")
                 
                 # Display results
-                st.success("🎉 Timetables processed successfully!")
+                st.success("Timetables processed successfully!")
                 
                 # Show individual results
-                st.subheader("📋 Individual Timetables")
+                st.subheader("Individual Timetables")
                 for label, df in zip(all_labels, all_dataframes):
                     with st.expander(f"View {label}"):
                         st.dataframe(
@@ -175,11 +174,11 @@ with tab1:
                         )
                 
                 # Show merged result
-                st.subheader("📊 Merged Timetable")
+                st.subheader("Merged Timetable")
                 st.dataframe(merged_df, use_container_width=True)
                 
                 # Export options
-                st.subheader("💾 Export")
+                st.subheader("Export")
                 col1, col2 = st.columns(2)
                 
                 with col1:
@@ -199,19 +198,19 @@ with tab1:
                         
                         with open(output_path, 'rb') as f:
                             st.download_button(
-                                label=f"📥 Download {export_format.upper()}",
+                                label=f"Download {export_format.upper()}",
                                 data=f,
                                 file_name=output_path.name,
                                 mime=f"application/{export_format}"
                             )
                 
             except Exception as e:
-                st.error(f"❌ Error: {str(e)}")
+                st.error(f"Error: {str(e)}")
                 st.exception(e)
 
 with tab2:
     st.markdown("""
-    ## 📖 How to Use
+    ## How to Use
     
     ### 1. Setup
     - Choose your LLM provider (OpenAI, Anthropic, or Google)
@@ -236,34 +235,31 @@ with tab2:
     - Review individual and merged timetables
     - Download as Excel (.xlsx) or CSV
     
-    ## 🎯 Tips for Best Results
+    ## Tips for Best Results
     
     - **Image Quality**: Use high-resolution, well-lit images
     - **Table Structure**: Ensure tables have clear borders
     - **Orientation**: Upload images in correct orientation
     - **Class Names**: Edit `prompts/system_prompt.txt` to include your specific class names
     
-    ## ⚙️ Advanced Settings
+    ## Advanced Settings
     
     - **Table Detection Scale**: Lower values (10-15) detect more lines, higher values (20-30) are more selective
     - **Joint Tolerance**: Controls how nearby points are clustered into grid intersections
     - **GPU**: Enable for faster OCR if you have CUDA-capable GPU
     - **Batch Size**: Higher values make fewer API calls but may hit token limits
     
-    ## 🔧 Customization
+    ## Customization
     
     To add your own class names:
     1. Edit `prompts/system_prompt.txt`
     2. Add your classes to the "Valid Class Names" section
     3. Restart the app
     
-    ## 📝 Supported LLM Providers
+    ## Supported LLM Providers
     
     - **OpenAI**: GPT-4, GPT-3.5-turbo
     - **Anthropic**: Claude 3 (Opus, Sonnet, Haiku)
     - **Google**: Gemini Pro
     """)
 
-# Footer
-st.sidebar.markdown("---")
-st.sidebar.markdown("Made with ❤️ using Streamlit")
